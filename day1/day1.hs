@@ -26,7 +26,6 @@ nextLocation location direction =  let (x, y) = location in case direction of
 
 -- Steps the required amount from the given start and facing. Returns the full path.
 step :: Int -> [Coordinate] -> Facing -> [Coordinate]
--- step steps path direction = let runner = \steps path ->
 step steps path direction = let loc = nextLocation (last path) direction in
     if steps == 0 then tail path else step (pred steps) (path ++ [loc]) direction
 
