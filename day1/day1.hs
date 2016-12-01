@@ -43,14 +43,37 @@ doMoves moves facing loc
         (newFacing, newLoc) = move m facing loc
         (m : ms) = moves
 
+followPath :: [Move] -> [Coordinate] -> Facing -> Coordinate -> Coordinate
+followPath moves locs facing loc
+    | length moves == 0 = loc
+    | newLoc `elem` locs = newLoc
+    | otherwise = followPath ms newLocs newFacing newLoc
+    where
+        (newFacing, newLoc) = move m facing loc
+        (m : ms) = moves
+        newLocs = locs ++ [newLoc]
+
+    -- do move
+    -- record new coord
+    -- coord seen before? done
+
+
 manhattanDist p1 p2 =
   sum $ zipWith (\x y -> abs (x - y)) p1 p2
 
 day1p1 = do
     input <- readFile "day1.txt"
-    return $ let moves = splitOn ", " input in
-        doMoves (map createMove moves) N (0, 0)
+    return $ let moves = map createMove (splitOn ", " input) in
+        doMoves moves N (0, 0)
+
+day1p2 = do
+    input <- readFile "day1.txt"
+    return $ let moves = map createMove (splitOn ", " input) in
+        followPath moves [] N (0, 0)
+
 
 main = do
     val <- day1p1
     let (x, y) = val in print $ manhattanDist [0, 0] [x, y]
+    val2 <- day1p2
+    let (x, y) = val2 in print $ manhattanDist [0, 0] [x, y]
