@@ -9,12 +9,14 @@ type Steps = Int
 type Move = (Direction, Steps)
 type Coordinate = (Int, Int)
 
+-- parses a single move from the input file
 parseMove :: String -> Move
 parseMove mv = (direction, read steps :: Int)
     where
         direction = if dir == "R" then R else L
         (_, _, _, [dir, steps]) = mv =~ "(R|L)([0-9]+)" :: (String, String, String, [String])
 
+-- Calculate next location depending on given location and facing
 nextLocation :: Coordinate -> Facing -> Coordinate
 nextLocation location direction =  case direction of
     N -> (x, succ y)
@@ -24,14 +26,16 @@ nextLocation location direction =  case direction of
     where
         (x, y) = location
 
+-- Steps the required amount from the given start and facing. Returns the full path.
 step :: Int -> [Coordinate] -> Facing -> [Coordinate]
 step steps path direction =
     if steps == 0
         then tail path
         else step (pred steps) (path ++ [loc]) direction
     where
-        loc = nextLocation (last path) direction
+        loc = nextLocation (last path) direction -- next location
 
+-- Do a single move instruction (e.g. R4)
 doMove :: Move -> Facing -> Coordinate -> (Facing, [Coordinate])
 doMove move facing location = (newDirection, step steps [location] newDirection)
     where
