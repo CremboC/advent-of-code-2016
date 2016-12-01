@@ -18,40 +18,35 @@ parseMove mv = (direction, read steps :: Int)
 
 -- Calculate next location depending on given location and facing
 nextLocation :: Coordinate -> Facing -> Coordinate
-nextLocation location direction =  case direction of
+nextLocation location direction =  let (x, y) = location in case direction of
     N -> (x, succ y)
     S -> (x, pred y)
     E -> (succ x, y)
     W -> (pred x, y)
-    where
-        (x, y) = location
 
 -- Steps the required amount from the given start and facing. Returns the full path.
 step :: Int -> [Coordinate] -> Facing -> [Coordinate]
-step steps path direction =
-    if steps == 0
-        then tail path
-        else step (pred steps) (path ++ [loc]) direction
-    where
-        loc = nextLocation (last path) direction -- next location
+-- step steps path direction = let runner = \steps path ->
+step steps path direction = let loc = nextLocation (last path) direction in
+    if steps == 0 then tail path else step (pred steps) (path ++ [loc]) direction
 
 -- Do a single move instruction (e.g. R4)
 doMove :: Move -> Facing -> Coordinate -> (Facing, [Coordinate])
-doMove move facing location = (newDirection, step steps [location] newDirection)
+doMove move direction location = (newDirection, step steps [location] newDirection)
     where
         (nxtDir, steps) = move
-        newDirection = case facing of
+        newDirection = case direction of
             N -> if nxtDir == R then E else W
             S -> if nxtDir == R then W else E
             E -> if nxtDir == R then S else N
             W -> if nxtDir == R then N else S
 
 createPath :: [Move] -> Facing -> [Coordinate] -> [Coordinate]
-createPath moves facing path
+createPath moves direction path
     | length moves == 0 = path
-    | otherwise = createPath ms newFacing (path ++ newLoc)
+    | otherwise = createPath ms newDir (path ++ newLoc)
     where
-        (newFacing, newLoc) = doMove m facing (last path)
+        (newDir, newLoc) = doMove m direction (last path)
         (m : ms) = moves
 
 day1p1 = do
