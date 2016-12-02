@@ -24,19 +24,13 @@ locs2' = Map.fromList [
 deltas = Map.fromList [(U, (0, 1)), (D, (0, -1)), (R, (1, 0)), (L, (-1, 0))]
 
 dir' :: Char -> Direction
-dir' 'U' = U
-dir' 'D' = D
-dir' 'L' = L
-dir' 'R' = R
+dir' c = case c of 'U' -> U; 'D' -> D; 'L' -> L; 'R' -> R
 
 delta' :: Direction -> (Int, Int)
 delta' dir = Map.findWithDefault (0, 0) dir deltas
 
 add :: (Num a, Num t) => (a, t) -> (a, t) -> (a, t)
 add a b = (fst a + fst b, snd a + snd b)
-
-flipMap :: Ord k => Map.Map a k -> Map.Map k a
-flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
 
 move :: Loc -> Loc' -> Int -> Direction -> Int
 move lc lc' start dir = if end == 0 then start else end
@@ -45,23 +39,17 @@ move lc lc' start dir = if end == 0 then start else end
 step :: Int -> Loc -> Loc' -> [Direction] -> Int
 step start lc lc' instr = foldl (\pos ins -> move lc lc' pos ins) start instr
 
-compute :: Loc -> Loc' -> IO [Int]
-compute loc loc' = do
-    input <- readFile "day2.txt"
-    let ins = lines input
-    return $ let instr = map (\i -> map dir' i) ins in
-        map (\i -> step 5 loc loc' i) instr
+solve :: [[Direction]] -> Loc -> Loc' -> [Int]
+solve instrucs loc loc' = map (step 5 loc loc') instrucs
+
+flipMap :: Ord k => Map.Map a k -> Map.Map k a
+flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
 
 main :: IO ()
 main = do
-    val <- let
-            loc = \n -> Map.findWithDefault (-999, -999) n (flipMap locs')
-            loc' = \n -> Map.findWithDefault 0 n locs'
-        in compute loc loc'
-    print $ val
-
-    val2 <- let
-            loc = \n -> Map.findWithDefault (-999, -999) n (flipMap locs2')
-            loc' = \n -> Map.findWithDefault 0 n locs2'
-        in compute loc loc'
-    print $ val2
+    input <- readFile "day2.txt"
+    let instrucs = map (map dir') (lines input)
+    let find mp k = Map.findWithDefault (-999, -999) k mp   -- find for (Int -> Coordinate)
+    let find' mp k = Map.findWithDefault 0 k mp             -- find for (Coordinate -> Int)
+    print $ solve instrucs (find $ flipMap locs') (find' locs')
+    print $ solve instrucs (find $ flipMap locs2') (find' locs2')
