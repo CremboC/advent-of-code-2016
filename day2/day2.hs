@@ -6,6 +6,8 @@ type Coordinate = (Int, Int)
 type Loc = Int -> Coordinate
 type Loc' = Coordinate -> Int
 
+flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
+
 dir' :: Char -> Direction
 dir' 'U' = U
 dir' 'D' = D
@@ -19,9 +21,6 @@ locs' = Map.fromList [
         ((-1, -1), 7), ((0, -1), 8), ((1, -1), 9)
     ]
 
--- (a, b) -> (b, a)
-locs = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs locs')
-
 -- map for Part 2
 locs2' = Map.fromList [
         ((0, 2), 1),
@@ -30,9 +29,6 @@ locs2' = Map.fromList [
         ((-1, -1), 0xA), ((0, -1), 0xB), ((1, -1), 0xC),
         ((0, -2), 0xD)
     ]
-
--- (a, b) -> (b, a)
-locs2 = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs locs2')
 
 move :: Int -> Direction -> Loc -> Loc' -> Int
 move start dir lc lc' = if end == 0 then start else end
@@ -55,33 +51,16 @@ compute loc loc' = do
     return $ let instr = map (\i -> map dir' i) ins in
         map (\i -> step i 5 loc loc') instr
 
-locp1 :: Loc
-locp1 n = Map.findWithDefault (-999, -999) n locs
-
-locp1' :: Loc'
-locp1' n = Map.findWithDefault 0 n locs'
-
-locp2 :: Loc
-locp2 n = Map.findWithDefault (-999, -999) n locs2
-
-locp2' :: Loc'
-locp2' n = Map.findWithDefault 0 n locs2'
-
 main :: IO ()
 main = do
-    val <- compute locp1 locp1'
+    val <- let
+            loc = \n -> Map.findWithDefault (-999, -999) n (flipMap locs')
+            loc' = \n -> Map.findWithDefault 0 n locs'
+        in compute loc loc'
     print $ val
-    val2 <- compute locp2 locp2'
+
+    val2 <- let
+            loc = \n -> Map.findWithDefault (-999, -999) n (flipMap locs2')
+            loc' = \n -> Map.findWithDefault 0 n locs2'
+        in compute loc loc'
     print $ val2
-
--- part 1
--- 1 2 3
--- 4 5 6
--- 7 8 9
-
--- part 2
---     1
---   2 3 4
--- 5 6 7 8 9
---   A B C
---     D
