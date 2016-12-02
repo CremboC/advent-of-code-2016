@@ -30,8 +30,8 @@ locs2' = Map.fromList [
         ((0, -2), 0xD)
     ]
 
-move :: Int -> Direction -> Loc -> Loc' -> Int
-move start dir lc lc' = if end == 0 then start else end
+move :: Loc -> Loc'  -> Int -> Direction -> Int
+move lc lc' start dir  = if end == 0 then start else end
     where
         end = case dir of
             U -> lc' (x, succ y)
@@ -40,16 +40,15 @@ move start dir lc lc' = if end == 0 then start else end
             L -> lc' (pred x, y)
         (x, y) = lc start
 
-
-step :: Instruction -> Int -> Loc -> Loc' -> Int
-step instr start lc lc' = foldl (\pos ins -> move pos ins lc lc') start instr
+step :: Int -> Loc -> Loc' -> Instruction -> Int
+step start lc lc' instr = foldl (\pos ins -> move lc lc' pos ins) start instr
 
 compute :: Loc -> Loc' -> IO [Int]
 compute loc loc' = do
     input <- readFile "day2.txt"
     let ins = lines input
     return $ let instr = map (\i -> map dir' i) ins in
-        map (\i -> step i 5 loc loc') instr
+        map (\i -> step 5 loc loc' i) instr
 
 main :: IO ()
 main = do
