@@ -1,18 +1,9 @@
 import qualified Data.Map.Strict as Map
 
-data Direction = U | D | L | R deriving Show
-type Instruction = [Direction]
+data Direction = U | D | L | R deriving (Show, Ord, Eq)
 type Coordinate = (Int, Int)
 type Loc = Int -> Coordinate
 type Loc' = Coordinate -> Int
-
-flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
-
-dir' :: Char -> Direction
-dir' 'U' = U
-dir' 'D' = D
-dir' 'L' = L
-dir' 'R' = R
 
 -- map for Part 1
 locs' = Map.fromList [
@@ -30,17 +21,28 @@ locs2' = Map.fromList [
         ((0, -2), 0xD)
     ]
 
-move :: Loc -> Loc'  -> Int -> Direction -> Int
-move lc lc' start dir  = if end == 0 then start else end
-    where
-        end = case dir of
-            U -> lc' (x, succ y)
-            D -> lc' (x, pred y)
-            R -> lc' (succ x, y)
-            L -> lc' (pred x, y)
-        (x, y) = lc start
+deltas = Map.fromList [(U, (0, 1)), (D, (0, -1)), (R, (1, 0)), (L, (-1, 0))]
 
-step :: Int -> Loc -> Loc' -> Instruction -> Int
+dir' :: Char -> Direction
+dir' 'U' = U
+dir' 'D' = D
+dir' 'L' = L
+dir' 'R' = R
+
+delta' :: Direction -> (Int, Int)
+delta' dir = Map.findWithDefault (0, 0) dir deltas
+
+add :: (Num a, Num t) => (a, t) -> (a, t) -> (a, t)
+add a b = (fst a + fst b, snd a + snd b)
+
+flipMap :: Ord k => Map.Map a k -> Map.Map k a
+flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
+
+move :: Loc -> Loc' -> Int -> Direction -> Int
+move lc lc' start dir = if end == 0 then start else end
+        where end = lc' $ add (lc start) (delta' dir)
+
+step :: Int -> Loc -> Loc' -> [Direction] -> Int
 step start lc lc' instr = foldl (\pos ins -> move lc lc' pos ins) start instr
 
 compute :: Loc -> Loc' -> IO [Int]
