@@ -4,7 +4,7 @@ import Data.Char
 import qualified Data.Map as Map
 
 -- convert "  142  23 543" -> [142, 23, 543]
--- wordsBy splits by some condition that defines that is not a word
+-- wordsBy splits by some condition that defines what is not a word
 -- map read converts the strings: ["142", "23", "543"] -> [142, 23, 543]
 triangulate :: String -> [Int]
 triangulate tri = map read $ wordsBy (not . isDigit) tri
@@ -26,10 +26,10 @@ sortAndGroup assocs = Map.assocs $ Map.fromListWith (++) [(k, [v]) | (k, v) <- a
 triangulate' :: [[Int]] -> [[Int]]
 triangulate' bunch = map snd $ sortAndGroup $ concat $ map (zip [0..]) bunch
 
--- checks there the given triangle [a, b, c] is a valid by checking all permutations
+-- checks there the given triangle [a, b, c] is a valid
 -- valid triangle: sum of two edges is more than the third
 valid :: [Int] -> Bool
-valid t = all (\[a, b, c] -> a + b > c) $ permutations t
+valid [a, b, c] = a < b + c && b < a + c && c < b + a
 
 main :: IO ()
 main = do
