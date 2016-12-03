@@ -4,10 +4,10 @@ import Data.Char
 import qualified Data.Map as Map
 
 -- convert "  142  23 543" -> [142, 23, 543]
--- wordsBy splits by some condition that defines what is not a word
+-- words splits into words (delimited by whitespace)
 -- map read converts the strings: ["142", "23", "543"] -> [142, 23, 543]
 triangulate :: String -> [Int]
-triangulate tri = map read $ wordsBy (not . isDigit) tri
+triangulate tri = map read $ words tri
 
 -- converts [(0, 321), (1, 567), (0, 123), (1, 765)] -> [(0, [321, 123]), (1, [567, 765])]
 -- equivalent to groupBy
