@@ -2,7 +2,6 @@ import Data.Char
 import Data.List
 import Data.Ord
 import Data.Monoid
-import Debug.Trace
 
 type Room = (String, Int, String)
 
@@ -16,13 +15,13 @@ roomify r = (room, sector, checksum)
 
 -- The function mconcat scans through the list and obtains the first
 -- non-EQ occurence (or EQ if all elements are EQ and thus both pairs are considered equal).
-srt (a1, a2) (b1, b2) = mconcat [compare b1 a1, compare a2 b2]
+srt lst1 lst2 = mconcat [compare (length lst2) (length lst1), compare (head lst1) (head lst2)]
 
 mkChecksum :: String -> String
 mkChecksum room = chsm
     where
-        chsm = map snd cms
-        cms = (take 5 . sortBy srt . map (\g -> (length g, head g)) . group . sort . filter isAlpha) $ room
+        chsm = map head cms
+        cms = take 5 . sortBy srt . group . sort . filter isAlpha $ room
 
 isRoom :: Room -> Bool
 isRoom (room, _, checksum) = checksum == mkChecksum room
@@ -31,9 +30,8 @@ rotate :: Int -> Char -> Char
 rotate amount '-' = ' '
 rotate amount char
     | amount == 0 = char
-    | otherwise = if succ char == succ 'z'
-        then rotate (amount - 1) 'a'
-        else rotate (amount - 1) (succ char)
+    | succ char == succ 'z' = rotate (amount - 1) 'a'
+    | otherwise = rotate (amount - 1) (succ char)
 
 maxJump = ord 'z' - ord 'a'
 
@@ -46,4 +44,6 @@ main = do
     -- part 1
     print $ foldl (\acc (_, sector, _) -> acc + sector) 0 rooms
     -- part 2
-    print $ filter (("north" `isInfixOf`) . decipher) rooms
+    print $ case find (("north" `isInfixOf`) . decipher) rooms of
+        Just room@(name, sector, checksum) -> decipher room ++ " is at sector " ++ show sector
+        Nothing -> "not found"
