@@ -2,6 +2,7 @@ import Data.Char
 import Data.List
 import Data.Ord
 import Data.Monoid
+import Data.Maybe
 
 type Room = (String, Int, String)
 
@@ -28,10 +29,8 @@ isRoom (room, _, checksum) = checksum == mkChecksum room
 
 rotate :: Int -> Char -> Char
 rotate amount '-' = ' '
-rotate amount char
-    | amount == 0 = char
-    | succ char == succ 'z' = rotate (amount - 1) 'a'
-    | otherwise = rotate (amount - 1) (succ char)
+rotate amount char = (cycle ['a'..'z']) !! (index + amount)
+    where index = fromMaybe 0 (char `elemIndex` ['a'..'z'])
 
 maxJump = ord 'z' - ord 'a'
 
