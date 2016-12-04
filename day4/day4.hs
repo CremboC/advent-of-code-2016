@@ -10,8 +10,8 @@ roomify :: String -> Room
 roomify r = (room, sector, checksum)
     where
         room = init rm -- the init removes the last dash before the digits
-        sector = (read . filter isDigit) xs
-        checksum = (filter isAlpha . dropWhile (/='[')) xs
+        sector = read . filter isDigit $ xs
+        checksum = filter isAlpha . dropWhile (/='[') $ xs
         (rm, xs) = break isDigit r
 
 -- The function mconcat scans through the list and obtains the first
@@ -21,8 +21,8 @@ srt (a1, a2) (b1, b2) = mconcat [compare b1 a1, compare a2 b2]
 mkChecksum :: String -> String
 mkChecksum room = chsm
     where
-        chsm = map (snd) cms
-        cms = (take 5 . sortBy (srt) . map (\g -> (length g, head g)) . group . sort . filter isAlpha) $ room
+        chsm = map snd cms
+        cms = (take 5 . sortBy srt . map (\g -> (length g, head g)) . group . sort . filter isAlpha) $ room
 
 isRoom :: Room -> Bool
 isRoom (room, _, checksum) = checksum == mkChecksum room
@@ -42,7 +42,7 @@ decipher (room, sector, _) = map (rotate $ sector `quot` maxJump) room
 
 main = do
     input <- readFile "input.txt"
-    let rooms = filter isRoom $ map roomify $ lines input
+    let rooms = filter isRoom . map roomify . lines $ input
     -- part 1
     print $ foldl (\acc (_, sector, _) -> acc + sector) 0 rooms
     -- part 2
