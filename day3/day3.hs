@@ -12,6 +12,7 @@ parse tri = map read $ words tri
 -- valid triangle: sum of two edges is more than the third
 triangle' :: [Int] -> Bool
 triangle' [a, b, c] = a < b + c && b < a + c && c < b + a
+-- triangle' t = (sort t)
 
 main :: IO ()
 main = do
@@ -26,4 +27,4 @@ main = do
     -- 2. take each bunch and transpose it [[x, y, z], [a, b, c], [f, g, h]] --> [[x, a, f], [y, b, g], [z, c, h]]
     -- 3. concat == flatten all the bunches
     -- 4-5. get length of valid triangles
-    print $ length $ filter triangle' $ concat $ map transpose $ chunksOf 3 parsed
+    print $ length $ filter triangle' $ concatMap transpose $ chunksOf 3 parsed
