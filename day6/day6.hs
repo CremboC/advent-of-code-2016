@@ -2,7 +2,7 @@ import Data.List
 import Data.Ord (comparing)
 
 grp :: String -> [(Char, Int)]
-grp str = map (\l -> (head l, length l)) . group . sort $ str
+grp = map (\l -> (head l, length l)) . group . sort
 
 main :: IO ()
 main = do
