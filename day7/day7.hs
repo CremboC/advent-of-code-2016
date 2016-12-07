@@ -18,13 +18,13 @@ supportsAbba (outs, ins) = validOuts && validIns
         validOuts = any hasAbba outs
         validIns = not $ any hasAbba ins
 
-mkAba :: String -> [String] -> [String]
-mkAba "" found = found
-mkAba (a:b:c:xs) found =
+mkAba :: String -> [String]
+mkAba "" = []
+mkAba (a:b:c:xs) =
     if a == c && a /= b
-        then mkAba (b:c:xs) (found ++ [a:b:a:[]])
-        else mkAba (b:c:xs) found
-mkAba _ found = found
+        then [a:b:a:[]] ++ mkAba (b:c:xs)
+        else mkAba (b:c:xs)
+mkAba _ = []
 
 mkBab :: String -> String
 mkBab (a:b:_) = b:a:b:[]
@@ -32,7 +32,7 @@ mkBab (a:b:_) = b:a:b:[]
 supportsAba :: ([String], [String]) -> Bool
 supportsAba (outs, ins) = (/= 0) . length . filter abaHasBab $ abas
     where
-        abas = concatMap (`mkAba` []) outs
+        abas = concatMap mkAba outs
         abaHasBab aba = (/= 0) . length . filter ((mkBab aba) `isInfixOf`) $ ins
 
 main :: IO ()
