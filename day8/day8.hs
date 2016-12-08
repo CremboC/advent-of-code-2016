@@ -35,28 +35,20 @@ mkRect x y state = state' ++ rest
         turnOn (_, r) = replicate x '#' ++ r
         (change, rest) = splitAt y state
 
-rotateCol :: Int -> Int -> [[Char]] -> [[Char]]
-rotateCol x rot state = transpose $ start ++ [col'] ++ end
+rotate :: Int -> Int -> [[Char]] -> [[Char]]
+rotate n rot state = start ++ [subject'] ++ end
     where 
-        col' = slice (len - rot) (len * 2 - rot - 1) (cycle . head $ col)
-        len = length . head $ col
-        (start, col, end) = splitAt' x transposed
-        transposed = transpose state
-
-rotateRow :: Int -> Int -> [[Char]] -> [[Char]]
-rotateRow y rot state = start ++ [row'] ++ end
-    where 
-        (start, row, end) = splitAt' y state
-        row' = slice (len - rot) (len * 2 - rot - 1) (cycle . head $ row)
-        len = length . head $ row
+        (start, subject, end) = splitAt' n state
+        subject' = slice (len - rot) (len * 2 - rot - 1) (cycle . head $ subject)
+        len = length . head $ subject
 
 create :: [Instruction] -> [[[Char]] -> [[Char]]]
 create [] = [(\s -> s)] -- noop
 create (inst:xs) = (match inst) : (create xs)
     where 
         match (Rect x y) = mkRect x y
-        match (RotateCol x rot) = rotateCol x rot
-        match (RotateRow y rot) = rotateRow y rot
+        match (RotateCol x rot) = transpose . rotate x rot . transpose
+        match (RotateRow y rot) = rotate y rot
 
 main :: IO ()
 main = do
