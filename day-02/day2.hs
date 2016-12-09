@@ -1,6 +1,7 @@
 import qualified Data.Map.Strict as Map
 
-data Direction = U | D | L | R deriving (Show, Ord, Eq)
+-- data Direction = U | D | L | R deriving (Show, Ord, Eq)
+type Direction = Char
 type Coordinate = (Int, Int)
 type Loc = Int -> Coordinate
 type Loc' = Coordinate -> Int
@@ -21,10 +22,7 @@ locs2' = Map.fromList [
         ((0, -2), 0xD)
     ]
 
-deltas = Map.fromList [(U, (0, 1)), (D, (0, -1)), (R, (1, 0)), (L, (-1, 0))]
-
-dir' :: Char -> Direction
-dir' c = case c of 'U' -> U; 'D' -> D; 'L' -> L; 'R' -> R
+deltas = Map.fromList [('U', (0, 1)), ('D', (0, -1)), ('R', (1, 0)), ('L', (-1, 0))]
 
 delta' :: Direction -> (Int, Int)
 delta' dir = Map.findWithDefault (0, 0) dir deltas
@@ -47,8 +45,7 @@ flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
 
 main :: IO ()
 main = do
-    input <- readFile "day2.txt"
-    let instrucs = map (map dir') (lines input)
+    instrucs <- lines <$> readFile "day2.txt"
     let find mp k = Map.findWithDefault (-999, -999) k mp   -- find for (Int -> Coordinate)
     let find' mp k = Map.findWithDefault 0 k mp             -- find for (Coordinate -> Int)
     print $ solve instrucs (find $ flipMap locs') (find' locs')
