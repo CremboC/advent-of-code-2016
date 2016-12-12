@@ -8,6 +8,7 @@ module Day12Parse (
 import Text.Megaparsec
 import Text.Megaparsec.String
 import Data.Maybe
+import Control.Applicative
 import qualified Text.Megaparsec.Lexer as L
 
 type Name = Char
@@ -18,34 +19,17 @@ nf = (\d -> Literal (fromIntegral d)) <$> L.integer
 rf = (\r -> Register r) <$> letterChar
 
 cpy :: Parser Instruction
-cpy = do
-    string "cpy "
-    expr1 <- choice [nf, rf]
-    space
-    expr2 <- choice [nf, rf]
-    return (Copy expr1 expr2)
+cpy = Copy <$> (string "cpy " *> choice [nf, rf]) <*> (space *> choice [nf, rf])
 
 jnz :: Parser Instruction
-jnz = do
-    string "jnz "
-    expr1 <- choice [nf, rf]
-    space
-    neg <- optional (char '-')
-    amount <- fromIntegral <$> L.integer
-    let amount' = if isJust neg then (0 - amount) else amount
-    return (Jump expr1 amount')
+jnz' e1 neg amm = (Jump e1 (fromIntegral $ if isJust neg then (0 - amm) else amm))
+jnz = jnz' <$> (string "jnz " *> choice [nf, rf]) <*> (space *> optional (char '-')) <*> L.integer
 
 inc :: Parser Instruction
-inc = do
-    string "inc "
-    reg <- rf
-    return (Inc reg)
+inc = Inc <$> (string "inc " *> rf)
 
 dec :: Parser Instruction
-dec = do
-    string "dec "
-    reg <- rf
-    return (Dec reg)
+dec = Dec <$> (string "dec " *> rf)
 
 parseAdvent :: String -> Maybe Instruction
 parseAdvent = parseMaybe (cpy <|> jnz <|> inc <|> dec)
