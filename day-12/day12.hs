@@ -1,3 +1,5 @@
+module Day12 where
+    
 import Day12Parse
 import Data.Maybe
 import Debug.Trace
