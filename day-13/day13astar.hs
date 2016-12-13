@@ -25,7 +25,7 @@ data Node = Node Cost Status Direction deriving Show
 type World = M.Map Coord Node
 
 astar :: Coord -> Coord -> SafetyChecker -> Integer
-astar start end checker = loop (open start M.empty) 1 end
+astar start end isValid = loop (open start M.empty) 1 end
     where
         loop :: World -> Integer -> Coord -> Integer
         loop _ 0 _ = error "Not found"
@@ -52,11 +52,8 @@ astar start end checker = loop (open start M.empty) 1 end
                 f (coord, (Node cost _ _)) = cost + manhattan coord end
                 open = M.filter isOpen world
 
-        isSafe :: Coord -> Bool
-        isSafe (x, y) = and [x >= 0, y >= 0]
-
         checkNeighbor :: Coord -> Node -> Direction -> World -> World
-        checkNeighbor new parent _ world | isSafe new && checker new = 
+        checkNeighbor new parent _ world | isValid new = 
             updateByStatus new parent world
         checkNeighbor new _ _ world = world
 
