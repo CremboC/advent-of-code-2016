@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Search.AStar (astar) where
 
@@ -44,25 +44,24 @@ astar start target nextEntries heuristic = loop (open start M.empty)
                         f' _ = Just $ (Node newCost tstatus)
                 f Unvisited = updateNode f' val world
                     where
-                        f' Nothing = Just $ (Node newCost Open)
-                        f' (Just (Node _ _)) = Just $ (Node newCost Open)
+                        f' _ = Just $ (Node newCost Open)
                 f Closed = world
                 (Node tcost tstatus) = getNode val world
                 newCost = succ pcost
 
         updateNode :: (Maybe Node -> Maybe Node) -> a -> World a -> World a
-        updateNode modifier coord world = M.alter modifier coord world
+        updateNode modifier val world = M.alter modifier val world
 
         getNode :: a -> World a -> Node
-        getNode coord world = M.findWithDefault d coord world
+        getNode val world = M.findWithDefault d val world
             where d = (Node 0 Unvisited)
 
         open :: a -> World a -> World a
-        open c world = M.alter f c world
+        open val world = M.alter f val world
             where f _ = Just $ Node 0 Open
 
         close :: a -> World a -> World a
-        close c world = M.alter f c world
+        close val world = M.alter f val world
             where
                 f Nothing = Nothing
                 f (Just (Node cost _)) = Just $ (Node cost Closed)

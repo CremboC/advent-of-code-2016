@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Day13 where
+module Main where
 
 import Search.AStar (astar)
-import Search.BFS (bfs)
+import Search.BFS (bfs, bfsOfDistance)
 import Data.Bits (popCount)
 
 type Coord = (Integer, Integer)
@@ -30,5 +30,11 @@ main = do
     let entree (x, y) = filter isValid [(x, succ y), (x, pred y), (succ x, y), (pred x, y)]
 
     -- print $ bfs start target entree
-    let heuristic c = manhattan c target
-    print $ astar start target entree heuristic
+    -- let heuristic c = manhattan c target
+    -- print $ astar start target entree heuristic
+
+
+    let tg = 20
+    let f (_, distance) = distance == tg
+    print $ length . filter f $ bfsOfDistance start tg entree
+    -- print $ map (length . filter f) . map (\i -> bfsOfDistance start i entree) $ [0..20]
