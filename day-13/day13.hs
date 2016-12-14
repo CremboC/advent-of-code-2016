@@ -29,12 +29,10 @@ main = do
     let target = (31, 39)
     let entree (x, y) = filter isValid [(x, succ y), (x, pred y), (succ x, y), (pred x, y)]
 
-    -- print $ bfs start target entree
-    -- let heuristic c = manhattan c target
-    -- print $ astar start target entree heuristic
+    let heuristic c = manhattan c target
+    
+    -- part 1
+    print $ astar start target entree heuristic
 
-
-    let tg = 20
-    let f (_, distance) = distance == tg
-    print $ length . filter f $ bfsOfDistance start tg entree
-    -- print $ map (length . filter f) . map (\i -> bfsOfDistance start i entree) $ [0..20]
+    -- part 2
+    print $ length $ bfsOfDistance start 50 entree
