@@ -24,7 +24,8 @@ chunk n xs = if length chunk' < n
 loop :: State -> [State]
 loop state = state : (loop (tick state))
 
-match :: [[(Int, Int)]] -> Bool
+-- check whether the current position of every disc in this state is at 0 (i.e. open)
+match :: [State] -> Bool
 match lst = all f . zip [0..] $ lst
     where f (i, s) = 0 == (snd $ s !! i)
 
