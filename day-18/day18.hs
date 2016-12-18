@@ -8,23 +8,20 @@ input = ".^^^.^.^^^^^..^^^..^..^..^^..^.^.^.^^.^^....^.^...^.^^.^^.^^..^^..^.^..
 size :: Int
 size = length input
 
-matchesAt :: String -> Int -> Char
-matchesAt xs i = f (drop i xs)
-    where 
-        f ('^':'^':'.':xs) = '^'
-        f ('.':'^':'^':xs) = '^'
-        f ('^':'.':'.':xs) = '^'
-        f ('.':'.':'^':xs) = '^'
-        f _ = '.'
+patternToTile :: String -> Char
+patternToTile "^^." = '^'
+patternToTile ".^^" = '^'
+patternToTile "^.." = '^'
+patternToTile "..^" = '^'
+patternToTile _ = '.'
 
 nextRow :: String -> String
-nextRow s = map f [0..size - 1]
-    where f i = matchesAt temp i
-          temp = ['.'] ++ s ++ ['.']
+nextRow (a:b:c:xs) = patternToTile (a:b:c:[]) : nextRow (b:c:xs)
+nextRow _ = []
 
 rows :: String -> [String]
 rows s = s : (rows s')
-    where s' = nextRow s
+    where s' = nextRow (['.'] ++ s ++ ['.'])
 
 main = do
     -- part 1
