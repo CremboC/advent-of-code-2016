@@ -8,19 +8,18 @@ input = ".^^^.^.^^^^^..^^^..^..^..^^..^.^.^.^^.^^....^.^...^.^^.^^.^^..^^..^.^..
 size :: Int
 size = length input
 
-slice :: [a] -> Int -> Int -> [a]
-slice xs i k = [x | (x,j) <- zip xs [1..k + 1], i < j]
-
-patternToTile :: String -> Char
-patternToTile "^^." = '^'
-patternToTile ".^^" = '^'
-patternToTile "^.." = '^'
-patternToTile "..^" = '^'
-patternToTile _ = '.'
+matchesAt :: String -> Int -> Char
+matchesAt xs i = f (drop i xs)
+    where 
+        f ('^':'^':'.':xs) = '^'
+        f ('.':'^':'^':xs) = '^'
+        f ('^':'.':'.':xs) = '^'
+        f ('.':'.':'^':xs) = '^'
+        f _ = '.'
 
 nextRow :: String -> String
 nextRow s = map f [0..size - 1]
-    where f i = patternToTile $ slice temp i (i + 2)
+    where f i = matchesAt temp i
           temp = ['.'] ++ s ++ ['.']
 
 rows :: String -> [String]
