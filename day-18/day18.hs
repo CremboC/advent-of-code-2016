@@ -1,31 +1,21 @@
 module Main where
+    
+input :: [Bool]
+input = map f ".^^^.^.^^^^^..^^^..^..^..^^..^.^.^.^^.^^....^.^...^.^^.^^.^^..^^..^.^..^^^.^^...^...^^....^^.^^^^^^^"
+    where f '.' = False
+          f _ = True
 
-input :: String
-input = ".^^^.^.^^^^^..^^^..^..^..^^..^.^.^.^^.^^....^.^...^.^^.^^.^^..^^..^.^..^^^.^^...^...^^....^^.^^^^^^^"
--- input = "..^^."
--- input = ".^^.^.^^^^"
-
-size :: Int
-size = length input
-
-patternToTile :: String -> Char
-patternToTile "^^." = '^'
-patternToTile ".^^" = '^'
-patternToTile "^.." = '^'
-patternToTile "..^" = '^'
-patternToTile _ = '.'
-
-nextRow :: String -> String
-nextRow (a:b:c:xs) = patternToTile (a:b:c:[]) : nextRow (b:c:xs)
+nextRow :: [Bool] -> [Bool]
+nextRow (x:y:z:xs) = (x /= z) : nextRow (y:z:xs)
 nextRow _ = []
 
-rows :: String -> [String]
+rows :: [Bool] -> [[Bool]]
 rows s = s : (rows s')
-    where s' = nextRow (['.'] ++ s ++ ['.'])
+    where s' = nextRow ([False] ++ s ++ [False])
 
 main = do
     -- part 1
-    print $ length . filter (== '.') . concat . take 40 . rows $ input
+    print $ length . filter (== False) . concat . take 40 . rows $ input
 
     -- part 2
-    print $ length . filter (== '.') . concat . take 400000 . rows $ input
+    print $ length . filter (== False) . concat . take 400000 . rows $ input
