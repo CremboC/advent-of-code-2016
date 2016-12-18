@@ -5,7 +5,7 @@ module Main where
 import qualified Data.ByteString.Char8 as BS 
 import qualified Crypto.Hash.MD5 as MD5
 import qualified Data.ByteString.Base16 as BS16
-import Day17Search (bfs)
+import Day17Search (bfs, bfsMax)
 import Debug.Trace
 import Data.Maybe (catMaybes)
 
@@ -18,10 +18,8 @@ md5 = BS.unpack . BS16.encode . MD5.hash . BS.pack
 
 directionTo :: Coord -> Coord -> Direction
 directionTo (x1, y1) (x2, y2) 
-    | x1 == x2 && y1 > y2 = 'U'
-    | x1 == x2 && y1 < y2 = 'D'
-    | y1 == y2 && x1 > x2 = 'L'
-    | otherwise           = 'R'
+    | x1 == x2 = if y1 > y2 then 'U' else 'D'
+    | y1 == y2 = if x1 > x2 then 'L' else 'R'
 
 validLocs :: [Coord]
 validLocs = [(a, b) | a <- [1..4], b <- [1..4]]
@@ -48,3 +46,6 @@ main = do
 
     -- part 1
     print $ bfs start target (nextEntries "edjrjqaa")
+
+    -- part 2
+    print $ maximum . map snd . take 10000 $ bfsMax start target (nextEntries "edjrjqaa")
