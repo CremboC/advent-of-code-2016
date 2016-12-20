@@ -11,19 +11,15 @@ solve n = f (S.fromList [1..n])
                 (a S.:< _) = S.viewl . S.take 2 $ sq
                 xs = S.drop 2 sq
 
-div' :: Int -> Int -> Float
-div' a b = (fromIntegral a) / (fromIntegral b)
-
 solve' :: Int -> Int
 solve' n = f (S.fromList [1..n])
-    where 
+    where
         f sq | length sq == 1 = let (a S.:< _) = S.viewl sq in a
         f sq | otherwise = f (xs S.|> a)
             where
                 (a S.:< _) = S.viewl sq
                 (_ S.:< xs) = S.viewl . S.deleteAt across $ sq
-                f' = if odd . length $ sq then pred . ceiling else ceiling
-                across = f' $ (length sq) `div'` 2 :: Int
+                across = length sq `div` 2
 
 main :: IO ()
 main = do
