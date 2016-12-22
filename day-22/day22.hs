@@ -1,45 +1,93 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections, TypeSynonymInstances, FlexibleInstances #-}
 module Main where
 
-import Text.Megaparsec hiding (parse)
-import Text.Megaparsec.String
-import qualified Text.Megaparsec.Lexer as L
-
+import Day22Parse
+import Day22Search (bfs)
 import Data.Maybe (catMaybes)
-import Data.List (foldl', sortBy, nubBy)
-import Data.Ord (comparing)
+import Data.List (foldl')
+import Debug.Trace
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
--- Filesystem              Size  Used  Avail  Use%
--- /dev/grid/node-x0-y0     91T   71T    20T   78%
-type Coord = (Int, Int)
-data Node = Node { loc :: Coord, size :: Int, used :: Int, available :: Int, use' :: Int } deriving (Show, Eq, Ord)
-
-parse :: String -> Maybe Node
-parse = parseMaybe (node)
-    where
-        node = f <$> (string "/dev/grid/node-x" *> int) <*> (string "-y" *> int) <*> fsspace <*> fsspace <*> fsspace <*> fsspace
-        f x y = Node (x, y)
-        fsspace = (skipMany spaceChar) *> int <* (choice [char 'T', char '%'])
-        int = fromIntegral <$> L.integer :: ParsecT Dec String a Int
+data State = State { snodes :: (M.Map Coord Node), sgoal :: Coord } deriving (Show, Eq, Ord)
+-- newtype NPair = NPair (Coord, Coord) deriving (Ord, Show)
+newtype Pair = Pair (Coord, Coord) deriving (Ord, Show)
+instance Eq Pair where
+    (Pair (a1, b1)) == (Pair (a2, b2)) = (a1 == b1 && a2 == b2) || (a1 == b2 && a2 == b1)
 
 asMap :: M.Map Int [Node] -> Node -> M.Map Int [Node]
 asMap m n = M.alter f (available n) m
     where f (Just s) = Just (n : s)
           f Nothing  = Just [n]
 
-pairs :: M.Map Int [Node] -> Node -> [(Node, Node)]
-pairs m n = map (n,) . concat . M.elems . M.dropWhileAntitone f $ m
+pairs :: M.Map Int [Node] -> Node -> [(Coord, Coord)]
+pairs m n = map npair . concat . M.elems . M.dropWhileAntitone f $ m
     where f k = (used n) > k
+          npair n' = (loc n, loc n')
 
-tupleEq :: (Node, Node) -> (Node, Node) -> Bool
-tupleEq (a1, b1) (a2, b2) = or [a1 == a2 && b1 == b2, a1 == b2 && b1 == a2]
+viablePairs :: [Node] -> [(Coord, Coord)]
+viablePairs nodes = concatMap (pairs byAvailable) . filter ((/= 0) . used) $ nodes
+    where byAvailable = foldl' asMap M.empty $ nodes
 
-same :: (Node, Node) -> Bool
-same (a, b) = a == b
+moveFromTo :: Node -> Node -> (Node, Node)
+moveFromTo from to = ((Node floc fsize tused (fsize - tused)), (Node tloc tsize fused (tsize - fused)))
+    where (Node floc fsize fused favail) = from
+          (Node tloc tsize tused tavail) = to
 
+moveFromTo' :: Coord -> Coord -> M.Map Coord Node -> M.Map Coord Node
+moveFromTo' from to nodes = s''
+    where 
+        (from', to') = moveFromTo (nodes M.! from) (nodes M.! to)
+        s' = M.insert to to' nodes
+        s'' = M.insert from from' s'
+
+isValidState :: State -> Bool
+isValidState (State nodes _) = all f (M.elems nodes)
+    where f (Node nloc nsize nused navail) = (nused <= nsize) && (nsize - nused == navail)
+
+adjacent :: (Coord, Coord) -> Bool
+adjacent ((x1, y1), (x2, y2)) | x1 == x2 && (abs (y1 - y2) == 1) = True
+adjacent ((x1, y1), (x2, y2)) | y1 == y2 && (abs (x1 - x2) == 1) = True
+adjacent _ = False
+
+nextEntries :: State -> [State]
+nextEntries (State nodes goal) = states
+    where 
+        states = map change viable
+        change (from, to) = State (moveFromTo' from to nodes) (if from == goal then to else goal)
+        viable = filter adjacent . viablePairs $ (M.elems nodes)
+
+isTarget :: State -> Bool
+isTarget (State _ goal) = goal == (0, 0)
+
+stateString :: State -> [String]
+stateString (State nodes _) = map f (M.elems nodes)
+    where 
+        f n = show (used n) ++ "/" ++ show (size n)
+
+main :: IO ()
 main = do
     nodes <- catMaybes . map parse . lines <$> readFile "input.txt"
-    let byAvailable = foldl' asMap M.empty $ nodes
-    print $ length . filter (not . same) . nubBy tupleEq . concat . map (pairs byAvailable) . filter ((/= 0) . used) $ nodes
+
+    -- part 1
+    -- print $ length $ viablePairs nodes
+
+    -- part 2
+    -- let f n = (loc n, n)
+    -- let initNodes = M.fromList . map f $ nodes
+    -- let initState = State initNodes (2, 0)
+
+    -- print $ bfs initState isTarget nextEntries
+    --      ((a1,b1))((a2,b2))
+    -- 
+    print $ (Pair ((0, 1),  (1, 2)) == Pair ((1, 2),  (0, 1)))
+    print $ (Pair ((0, 1),  (1, 2)) == Pair ((1, 1),  (0, 1)))
+    print $ (Pair ((0, 1),  (1, 2)) == Pair ((0, 1),  (1, 2)))
+
+
+    -- let f n = (loc n, n)
+    -- let initNodes = M.fromList . map f $ nodes
+    -- let initState = State initNodes (33, 0)
+
+    -- print $ bfs initState isTarget nextEntries    
+
