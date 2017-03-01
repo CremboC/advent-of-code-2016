@@ -1,4 +1,6 @@
 import qualified Data.Map.Strict as Map
+import Data.Tuple (swap)
+import Debug.Trace
 
 -- data Direction = U | D | L | R deriving (Show, Ord, Eq)
 type Direction = Char
@@ -27,21 +29,22 @@ deltas = Map.fromList [('U', (0, 1)), ('D', (0, -1)), ('R', (1, 0)), ('L', (-1, 
 delta' :: Direction -> (Int, Int)
 delta' dir = Map.findWithDefault (0, 0) dir deltas
 
-add :: (Num a, Num t) => (a, t) -> (a, t) -> (a, t)
-add a b = (fst a + fst b, snd a + snd b)
+(<+>) :: (Num a, Num t) => (a, t) -> (a, t) -> (a, t) 
+(x, y) <+> (x', y') = (x + x', y + y')
 
 move :: Loc -> Loc' -> Int -> Direction -> Int
 move lc lc' start dir = if end == 0 then start else end
-        where end = lc' $ add (lc start) (delta' dir)
-
+    where end = lc' (lc start <+> delta' dir)
+            
 step :: Int -> Loc -> Loc' -> [Direction] -> Int
 step start lc lc' instr = foldl (\pos ins -> move lc lc' pos ins) start instr
 
 solve :: [[Direction]] -> Loc -> Loc' -> [Int]
-solve instrucs loc loc' = map (step 5 loc loc') instrucs
+solve instrucs loc loc' = tail . reverse . foldl f [5] $ instrucs
+    where f res ins = step (head res) loc loc' ins : res
 
 flipMap :: Ord k => Map.Map a k -> Map.Map k a
-flipMap mp = Map.fromList $ map (\x -> (snd x, fst x)) (Map.assocs mp)
+flipMap mp = Map.fromList $ map swap (Map.assocs mp)
 
 main :: IO ()
 main = do
