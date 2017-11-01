@@ -1,6 +1,11 @@
 pipeline {
   agent any
   stages {
+    stage('Install GHC') {
+      steps {
+        tool 'ghc'
+      }
+    }
     stage('Test Day 1') {
       steps {
         sh '''#!/bin/sh
