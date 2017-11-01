@@ -3,7 +3,8 @@ pipeline {
   stages {
     stage('Install GHC') {
       steps {
-        tool 'ghc'
+        sh '''#!/bin/sh
+apt-get update && apt-get install ghc6'''
       }
     }
     stage('Test Day 1') {
